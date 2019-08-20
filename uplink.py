@@ -12,7 +12,7 @@ dest_filename = "LoRa.xlsx"  #The name of File Excel
 
 doc = openpyxl.load_workbook(filename=dest_filename) #Open File Excel
 gSheet = doc.worksheets[0]  #"general" Sheet
-iRow=2 #begin of row second
+iRow=3 #begin of row third
 
 #================= Function Callback ===========================================
 def uplink_callback(msg, client):
