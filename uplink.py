@@ -3,7 +3,7 @@ import ttn
 import json
 import openpyxl
 import base64
-from datetime import datetime
+from base64 import b64decode
 global iRow, iColDev, iColMeta, iColGw, nGw;
 
 app_id = "beacon-encontrack"
@@ -16,22 +16,29 @@ iRow=3 #begin of row third
 
 #================= Function Callback ===========================================
 def uplink_callback(msg, client):
-    global iRow, iColDev, iColMeta, iColGw, nGw; #variable definition
+    global iRow, iColMeta, iColGw, nGw; #variable definition
 
     print("Received uplink from ", msg.dev_id)
+
     nGw = len(msg[6][6]) # gateways number
     iColDev=1; iColMet=7; iColGw=14
-
+    #===== General processing =================================================
+    gSheet.cell(row=iRow, column=1).value = msg.dev_id
+    gSheet.cell(row=iRow, column=2).value = msg.hardware_serial
+    gSheet.cell(row=iRow, column=3).value = msg.port
+    gSheet.cell(row=iRow, column=4).value = msg.counter
+    gSheet.cell(row=iRow, column=5).value = b64decode(msg.payload_raw).hex() #convert payload from base64 to hexadecimal
+    #====== Metadata processing ===============================================
     for iVal in range(6):
-        gSheet.cell(row=iRow, column=iColDev).value = msg[iVal]
         gSheet.cell(row=iRow, column=iColMet).value = msg.metadata[iVal]
-        iColDev+=1; iColMet+=1 #column increment
+       iColMet+=1 #column increment
+    #====== Gateways processing ================================================
     for iGw in range(nGw):
         for gVal in range(6):
             gSheet.cell(row=iRow, column=iColGw).value = msg.metadata.gateways[iGw][gVal]
-            iColGw+=1;
+            iColGw+=1;#column increment
 
-    gSheet.cell(row=iRow, column=13).value = nGw
+    gSheet.cell(row=iRow, column=13).value = nGw # print gateway number
     doc.save(filename = dest_filename) #save file
     print("File updated")
     iRow+=1 #row increment
